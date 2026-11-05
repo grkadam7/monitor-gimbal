@@ -60,10 +60,38 @@ Bevel gears transfer the drive through 90° at the top of the arm, linking the t
 | Servo motor | Sets the screen tilt |
 | Motor driver and external supply | Stepper drive and shared power |
 
-The ESP32 firmware was written in C during the build.
+The ESP32 firmware is written in C and lives in [`firmware/monitor_gimbal/monitor_gimbal.ino`](firmware/monitor_gimbal/monitor_gimbal.ino). It connects to Wi-Fi and serves a web page with Up, Down, Left, Right and Stop controls.
+
+## Firmware
+
+The sketch starts a small web server on port 80. Each button sends a request that moves one axis, then redirects back to the control page.
+
+| Function | ESP32 pin | Notes |
+|---|---|---|
+| Stepper IN1 | GPIO 12 | Through the stepper driver |
+| Stepper IN2 | GPIO 14 | Through the stepper driver |
+| Stepper IN3 | GPIO 27 | Through the stepper driver |
+| Stepper IN4 | GPIO 26 | Through the stepper driver |
+| Servo signal | GPIO 15 | Screen tilt servo |
+
+| Button | Action |
+|---|---|
+| Up | Stepper forward, 1000 steps |
+| Down | Stepper reverse, 333 steps |
+| Left | Servo to 120° |
+| Right | Servo to 60° |
+| Stop | Detach the servo so it stops holding torque |
+
+### Flash it
+
+1. Install the Arduino IDE and the ESP32 board package.
+2. Install the **ESP32Servo** library (Library Manager). `WiFi`, `WebServer` and `Stepper` come with the ESP32 core.
+3. Open `firmware/monitor_gimbal/monitor_gimbal.ino` and replace `YOUR_WIFI_SSID` and `YOUR_WIFI_PASSWORD` with your own network details.
+4. Select **ESP32 Dev Module** and upload.
+5. Open the Serial Monitor at 115200 baud, then open the printed IP address in a browser.
 
 > [!NOTE]
-> This repository currently documents the hardware and mechanical design. The original firmware source is not included.
+> Power the stepper driver from a separate supply and connect its ground to the ESP32. Running the motor from the board's 5 V pin will brown out the board.
 
 ## Results
 
@@ -99,10 +127,14 @@ This was a team project for the Engineering Exploration course. My contributions
 
 ```text
 .
+├── firmware/
+│   └── monitor_gimbal/
+│       └── monitor_gimbal.ino
 ├── images/
 │   ├── prototype.jpeg
 │   ├── prototype-side.jpeg
 │   ├── barrel-cam.jpeg
 │   └── barrel-cam-assembly.png
+├── LICENSE
 └── README.md
 ```
